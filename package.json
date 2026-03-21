@@ -2,7 +2,7 @@
   "name": "sqlvault",
   "displayName": "SQL Vault",
   "description": "Search and save SQL queries from your SQL Vault",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "mateusarcedev",
   "icon": "public/sql-vault-logo_128x128.png",
   "engines": {
