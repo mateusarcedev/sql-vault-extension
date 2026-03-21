@@ -1,0 +1,20 @@
+# Build output
+out/
+
+# Dependencies
+node_modules/
+
+# Package
+*.vsix
+
+# Environment
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/launch.json
+!.vscode/extensions.json

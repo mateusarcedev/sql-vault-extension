@@ -1,0 +1,109 @@
+{
+  "name": "sqlvault",
+  "displayName": "SQL Vault",
+  "description": "Search and save SQL queries from your SQL Vault",
+  "version": "0.1.0",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "sqlvault.searchQuery",
+        "title": "SQL Vault: Search Query"
+      },
+      {
+        "command": "sqlvault.saveQuery",
+        "title": "SQL Vault: Save Selected SQL"
+      },
+      {
+        "command": "sqlvault.configure",
+        "title": "SQL Vault: Configure API Key"
+      },
+      {
+        "command": "sqlvault.refreshTree",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sqlvault",
+          "title": "SQL Vault",
+          "icon": "$(database)"
+        }
+      ]
+    },
+    "views": {
+      "sqlvault": [
+        {
+          "id": "sqlvault.queriesTree",
+          "name": "Queries"
+        }
+      ]
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "sqlvault.saveQuery",
+          "when": "editorHasSelection",
+          "group": "sqlvault"
+        },
+        {
+          "command": "sqlvault.searchQuery",
+          "group": "sqlvault"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "sqlvault.refreshTree",
+          "when": "view == sqlvault.queriesTree",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "SQL Vault",
+      "properties": {
+        "sqlvault.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:3000",
+          "description": "URL where SQL Vault is running"
+        },
+        "sqlvault.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API Key generated in SQL Vault settings"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "sqlvault.searchQuery",
+        "key": "ctrl+shift+s",
+        "mac": "cmd+shift+s",
+        "when": "editorTextFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "@vscode/vsce": "^2.0.0"
+  }
+}
