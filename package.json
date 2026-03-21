@@ -4,6 +4,7 @@
   "description": "Search and save SQL queries from your SQL Vault",
   "version": "0.1.0",
   "publisher": "mateusarcedev",
+  "icon": "public/sql-vault-logo_128x128.png",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -47,7 +48,8 @@
       "sqlvault": [
         {
           "id": "sqlvault.queriesTree",
-          "name": "Queries"
+          "name": "Queries",
+          "icon": "public/sql-vault-logo_128x128.png"
         }
       ]
     },
