@@ -3,7 +3,7 @@
   "displayName": "SQL Vault",
   "description": "Search and save SQL queries from your SQL Vault",
   "version": "0.1.0",
-  "publisher": "local",
+  "publisher": "mateusarcedev",
   "engines": {
     "vscode": "^1.85.0"
   },
