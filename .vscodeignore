@@ -1,7 +1,11 @@
 .vscode/**
 .vscode-test/**
+.vscode-test.mjs
+.github/**
 node_modules/**
 src/**
+out/test/**
+*.vsix
 .gitignore
 yarn.lock
 package-lock.json
