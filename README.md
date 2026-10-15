@@ -1,139 +1,81 @@
-# SQL Vault Extension (VS Code)
+# SQL Vault for VS Code
 
-Extensão do VS Code para buscar e salvar consultas SQL diretamente no [SQL Vault](https://github.com/mateusarcedev/sql-vault).
+Search, insert and save SQL queries from your self-hosted [SQL Vault](https://github.com/mateusarcedev/sql-vault) without leaving the editor.
 
-Este repositório é **separado** do projeto principal e cobre apenas a integração com o editor.
+[Versão em português](README.pt-BR.md)
 
-## Visão geral
+![Search and insert a query](https://raw.githubusercontent.com/mateusarcedev/sql-vault/main/public/screenshots/extensao-vscode-buscar-query.jpg)
 
-A extensão oferece um fluxo simples para uso diário:
+## Features
 
-- Buscar queries salvas no SQL Vault e inserir no editor
-- Salvar SQL selecionado do editor no SQL Vault
-- Navegar por uma árvore lateral com queries recentes
-- Configurar autenticação por API Key (headless)
+- **Search & insert**: fuzzy search your queries and insert the SQL at the cursor (or in a new SQL document)
+- **Save selection**: save the selected SQL to SQL Vault with a name and database type
+- **Sidebar**: browse your most recent queries (up to 50) in the SQL Vault view
+- **Secure by default**: API key kept in VS Code SecretStorage, HTTPS required for remote servers
 
-## Relação com o projeto principal
+## Requirements
 
-- Projeto principal (web + API): [mateusarcedev/sql-vault](https://github.com/mateusarcedev/sql-vault)
-- Esta extensão usa autenticação via `Authorization: Bearer {token}`
-- O token é gerado no SQL Vault em `Settings > API Keys`
+| | Version |
+|---|---|
+| VS Code | 1.85 or newer |
+| SQL Vault | Any version with API keys. Usage counting needs `POST /api/queries/:id/usage` ([mateusarcedev/sql-vault#20](https://github.com/mateusarcedev/sql-vault/pull/20)); older servers work, the counter just does not increase. |
 
-## Requisitos
+## Installation
 
-- VS Code `^1.85.0`
-- Instância do SQL Vault rodando (padrão: `http://localhost:3000`)
-- API Key válida gerada no SQL Vault
-- Node.js + npm (apenas para desenvolvimento/empacotamento)
+- **VS Code**: search for **SQL Vault** (`mateusarcedev.sqlvault`) in the Extensions view, or run `code --install-extension mateusarcedev.sqlvault`
+- **Cursor, VSCodium and other Open VSX editors**: install `mateusarcedev.sqlvault` from [Open VSX](https://open-vsx.org/extension/mateusarcedev/sqlvault) (from 0.2.0)
+- **Manual**: download the `.vsix` from [Releases](https://github.com/mateusarcedev/sql-vault-extension/releases) and run `Extensions: Install from VSIX...`
 
-## Configuração
+## Setup
 
-No `settings.json` do VS Code:
+1. If SQL Vault is not at `http://localhost:3000`, set the URL in your **user** settings:
+   ```json
+   { "sqlvault.apiUrl": "https://sqlvault.example.com" }
+   ```
+2. Run **SQL Vault: Configure API Key**. The extension opens `Settings > API Keys` in SQL Vault; create a key and paste it into the prompt.
+3. The connection is tested before the key is saved.
 
-```json
-{
-  "sqlvault.apiUrl": "http://localhost:3000",
-  "sqlvault.apiKey": ""
-}
-```
+Do not put the API key in `settings.json`: it is stored only in SecretStorage.
 
-### Primeira conexão
+## Commands
 
-1. Execute `SQL Vault: Configure API Key`
-2. A extensão abre `{apiUrl}/settings#api-keys` no navegador
-3. Cole o token no prompt do VS Code
-4. A extensão testa conexão e salva o token globalmente
+| Command | Default access |
+|---|---|
+| SQL Vault: Search Query | `Ctrl+Alt+Q` (Windows/Linux), `Cmd+Alt+Q` (macOS), editor context menu |
+| SQL Vault: Save Selected SQL | Editor context menu with a selection |
+| SQL Vault: Configure API Key | Command Palette |
+| SQL Vault: Remove API Key | Command Palette |
+| Refresh | SQL Vault view title bar |
 
-## Comandos
+## Security
 
-| Comando | ID | Como usar |
-| --- | --- | --- |
-| SQL Vault: Search Query | `sqlvault.searchQuery` | Paleta de comandos, menu de contexto ou atalho |
-| SQL Vault: Save Selected SQL | `sqlvault.saveQuery` | Menu de contexto com texto selecionado |
-| SQL Vault: Configure API Key | `sqlvault.configure` | Paleta de comandos |
-| Refresh | `sqlvault.refreshTree` | Botão de refresh na view de Queries |
-
-### Atalho
-
-- Buscar query: `Cmd+Shift+S` (macOS) / `Ctrl+Shift+S` (Windows/Linux)
-
-## Fluxos principais
-
-### 1) Buscar query
-
-- Abre QuickPick com busca reativa
-- Consulta `GET /api/queries?search={term}`
-- Insere SQL no editor ativo (ou abre novo documento SQL)
-- Incrementa `copyCount` via `POST /api/queries/{id}/copy`
-
-### 2) Salvar SQL selecionado
-
-- Lê seleção atual do editor
-- Solicita nome da query
-- Solicita tipo de banco (`postgresql`, `mysql`, `sqlite`, `sqlserver`, `oracle`, `other`)
-- Envia para `POST /api/queries` com `status: "active"`
-- Atualiza a árvore lateral após sucesso
-
-### 3) Tree View (Queries)
-
-- Exibe view `SQL Vault > Queries` na barra lateral
-- Carrega queries da API e mostra até 50 itens
-- Clique em um item para inserir o SQL no editor
-
-## Endpoints consumidos
-
-- `GET /api/queries`
-- `POST /api/queries`
-- `GET /api/tags` (teste de conexão)
-- `POST /api/queries/{id}/copy`
-
-## Desenvolvimento local
-
-```bash
-npm install
-npm run compile
-```
-
-Para desenvolvimento contínuo:
-
-```bash
-npm run watch
-```
-
-Para gerar pacote `.vsix`:
-
-```bash
-npm run package
-```
-
-## Estrutura do projeto
-
-```text
-src/
-  api.ts                 # cliente HTTP e tipos
-  auth.ts                # leitura/configuração de apiUrl e apiKey
-  extension.ts           # ativação e registro de comandos/providers
-  commands/
-    configure.ts         # comando de configuração
-    saveQuery.ts         # salvar SQL selecionado
-    searchQuery.ts       # buscar e inserir query
-  providers/
-    queryTreeProvider.ts # árvore lateral de queries
-```
+- **API key**: stored in VS Code [SecretStorage](https://code.visualstudio.com/api/references/vscode-api#SecretStorage) (OS keychain), never in `settings.json`. Keys saved in settings by 0.1.x are moved there automatically and removed from settings.
+- **Transport**: `sqlvault.apiUrl` must use `https://`; plain `http://` is accepted only for `localhost`/`127.0.0.1`/`::1`.
+- **Workspaces**: `sqlvault.apiUrl` is machine-scoped, so a repository's `.vscode/settings.json` cannot redirect your key to another server.
+- To revoke access on a machine, run **SQL Vault: Remove API Key** and delete the key in SQL Vault.
 
 ## Troubleshooting
 
-- `Invalid API Key...`: execute `SQL Vault: Configure API Key` novamente
-- `Cannot connect to SQL Vault...`: confirme servidor rodando e `sqlvault.apiUrl`
-- `Request timed out after 5000ms`: verifique conectividade/rede
-- Árvore vazia: confirme se existem queries e clique em `Refresh`
+| Message | Fix |
+|---|---|
+| `Invalid API key...` | Run **SQL Vault: Configure API Key** again |
+| `Cannot connect to SQL Vault at ...` | Check the server is running and `sqlvault.apiUrl` |
+| `Refusing to send the API key to http://...` | Use `https://` for remote servers |
+| `Request to SQL Vault timed out...` | Check network/VPN; requests time out after 5 s |
 
-## Limitações atuais
+## Development
 
-- Tree View limitada aos 50 primeiros resultados
-- Sem suporte offline/cache local
-- Sem gerenciamento de tags na interface da extensão
+Requires Node.js 22.
 
-## Licença
+```bash
+npm ci
+npm test                 # compile + unit tests (node:test, no VS Code needed)
+npm run test:integration # downloads VS Code and runs the extension tests
+npm run package          # builds the .vsix
+```
 
-Use a mesma política de licenciamento definida pelo projeto principal SQL Vault.
+Press `F5` in VS Code to run an Extension Development Host. Releases are published from `v*` tags by GitHub Actions; see [CHANGELOG.md](CHANGELOG.md).
+
+## License
+
+[MIT](LICENSE)

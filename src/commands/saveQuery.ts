@@ -1,14 +1,10 @@
 import * as vscode from 'vscode';
-import { getApiKey, getApiUrl, configure } from '../auth';
-import { SqlVaultClient, DatabaseType } from '../api';
+import { getClient } from '../auth';
+import { DatabaseType } from '../api';
+
+const DATABASES: DatabaseType[] = ['postgresql', 'mysql', 'sqlite', 'sqlserver', 'oracle', 'other'];
 
 export async function saveQuery(context: vscode.ExtensionContext) {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    await configure(context);
-    return;
-  }
-
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
 
@@ -18,34 +14,31 @@ export async function saveQuery(context: vscode.ExtensionContext) {
     return;
   }
 
+  const client = await getClient(context);
+  if (!client) return;
+
   const name = await vscode.window.showInputBox({
     prompt: 'Query name',
     placeHolder: 'Ex: Monthly sales report',
     validateInput: v => v.trim() ? null : 'Name is required',
   });
-
   if (!name) return;
 
-  const databases: DatabaseType[] = ['postgresql', 'mysql', 'sqlite', 'sqlserver', 'oracle', 'other'];
-  const databaseStr = await vscode.window.showQuickPick(databases, {
-    placeHolder: 'Select the target database'
-  });
+  const database = await vscode.window.showQuickPick(DATABASES, {
+    placeHolder: 'Select the target database',
+  }) as DatabaseType | undefined;
+  if (!database) return;
 
-  if (!databaseStr) return;
-  const database = databaseStr as DatabaseType;
-
-  const client = new SqlVaultClient(getApiUrl(), apiKey);
-  
   await vscode.window.withProgress({
     location: vscode.ProgressLocation.Notification,
     title: 'Saving query to SQL Vault...',
   }, async () => {
     try {
-      await client.createQuery({ name, sql, database, status: 'active' });
+      await client.createQuery({ name: name.trim(), sql, database, status: 'active' });
       vscode.window.showInformationMessage('Query saved to SQL Vault!');
       vscode.commands.executeCommand('sqlvault.refreshTree');
-    } catch (e: any) {
-      vscode.window.showErrorMessage(`Failed to save query: ${e.message}`);
+    } catch (e) {
+      vscode.window.showErrorMessage(`Failed to save query: ${e instanceof Error ? e.message : String(e)}`);
     }
   });
 }

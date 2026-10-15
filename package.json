@@ -1,19 +1,27 @@
 {
   "name": "sqlvault",
   "displayName": "SQL Vault",
-  "description": "Search and save SQL queries from your SQL Vault",
-  "version": "0.1.2",
+  "description": "Search, insert and save SQL queries from your self-hosted SQL Vault without leaving the editor.",
+  "version": "0.2.0",
   "publisher": "mateusarcedev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mateusarcedev/sql-vault-extension.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mateusarcedev/sql-vault-extension/issues"
+  },
+  "homepage": "https://github.com/mateusarcedev/sql-vault-extension#readme",
   "icon": "public/sql-vault-logo_128x128.png",
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
+    "Snippets",
     "Other"
   ],
-  "activationEvents": [
-    "onStartupFinished"
-  ],
+  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -28,6 +36,10 @@
       {
         "command": "sqlvault.configure",
         "title": "SQL Vault: Configure API Key"
+      },
+      {
+        "command": "sqlvault.clearApiKey",
+        "title": "SQL Vault: Remove API Key"
       },
       {
         "command": "sqlvault.refreshTree",
@@ -79,33 +91,61 @@
         "sqlvault.apiUrl": {
           "type": "string",
           "default": "http://localhost:3000",
-          "description": "URL where SQL Vault is running"
+          "scope": "machine",
+          "markdownDescription": "URL where SQL Vault is running. Must use `https://` unless it points to `localhost`. Only read from user settings."
         },
         "sqlvault.apiKey": {
           "type": "string",
           "default": "",
-          "description": "API Key generated in SQL Vault settings"
+          "scope": "application",
+          "deprecationMessage": "The API key is now stored in VS Code SecretStorage. Run 'SQL Vault: Configure API Key'; any value left here is moved there automatically and removed.",
+          "markdownDeprecationMessage": "The API key is now stored in VS Code SecretStorage. Run `SQL Vault: Configure API Key`; any value left here is moved there automatically and removed."
         }
       }
     },
     "keybindings": [
       {
         "command": "sqlvault.searchQuery",
-        "key": "ctrl+shift+s",
-        "mac": "cmd+shift+s",
+        "key": "ctrl+alt+q",
+        "mac": "cmd+alt+q",
         "when": "editorTextFocus"
       }
     ]
   },
   "scripts": {
+    "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "test": "npm run compile && npm run test:unit",
+    "test:unit": "node --test \"out/test/unit/**/*.test.js\"",
+    "test:integration": "npm run compile && vscode-test",
     "package": "vsce package"
   },
   "devDependencies": {
-    "@types/vscode": "^1.85.0",
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
-    "@vscode/vsce": "^2.0.0"
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.0.0",
+    "@types/vscode": "1.85.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^4.0.0",
+    "typescript": "^5.9.3"
+  },
+  "keywords": [
+    "sql",
+    "query",
+    "snippets",
+    "postgresql",
+    "mysql",
+    "sqlite",
+    "sql vault"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "The SQL Vault URL can only be set in user settings and the API key is kept in SecretStorage; workspace settings never change where the key is sent.",
+      "restrictedConfigurations": [
+        "sqlvault.apiUrl"
+      ]
+    }
   }
 }
